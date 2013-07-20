@@ -19,7 +19,7 @@ date_format: "ordinal"
 subscribe_rss: /atom.xml
 subscribe_email:
 # RSS feeds can list your email address if you like
-email: mfthits@gmail.com
+email: mfthits#gmail.com
 
 # ----------------------- #
 #    Jekyll & Plugins     #
@@ -94,7 +94,7 @@ disqus_short_name:
 disqus_show_comment_count: false
 
 # Google Analytics
-google_analytics_tracking_id:
+google_analytics_tracking_id: "UA-42604344-1"
 
 # Facebook Like
 facebook_like: false
