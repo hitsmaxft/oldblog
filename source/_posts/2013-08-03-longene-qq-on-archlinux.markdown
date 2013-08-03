@@ -1,12 +1,11 @@
 ---
 layout: post
-title: "Archlinux Longene qq 轻松上手"
+title: "Archlinux Longene QQ 轻松上手"
 date: 2013-08-03 01:04
 comments: true
 categories: linux-desktop, app, qq, archlinux
 ---
-
-## 通过 Aur 安装相关包
+### 通过 Aur 安装相关包
 
 完整安装 longnen qq 需要以下几个包
 
@@ -16,19 +15,18 @@ categories: linux-desktop, app, qq, archlinux
 
 装上了就能跑了, 基本功能都没问题.
 
-## 可能遇到的问题
-
+### 可能遇到的问题
 
 **英文半角符号显示错位**
 
-字体问题, 未解决
+    字体问题, 未解决
 
 **没有声音**
 
 需要安装声音相关的包, 64位系统装上第一个, 32位选择第二个.
 
-* lib32-alsa-plugins 
-* alsa-plugins 
+> * lib32-alsa-plugins 
+> * alsa-plugins 
 
 64 位系统需要启用 multi 仓库才能找到 lib32 相关包, 具体操作见 [wiki:multilib](https://wiki.archlinux.org/index.php/Multilib) 
 
