@@ -6,10 +6,140 @@ comments: true
 categories: [zsh, script, tutorial]
 ---
 
-* 为什么
-* 目标
-* 编写指南
-    * 子命令补全
-    * 参数补全
-* 总结
+zsh 已经不是什么新新鲜事了, 而 `oh-my-zsh` 相信很多人都已经在用了.
 
+但`zsh` 存在一个明显的问题, 本来它就不是什么开箱即用的工具, 需要大量配置, 也很难上手扩充新功能.
+
+常规的 alias 和 shell script, 能用上些稍微方便的特殊语法, 大部分保留在 bash 的水平. 这时候倒不如使用bash的语法, 保证兼容性和可移植性.
+
+
+本文简单介绍如何编写zsh的补全插件, 以 Mac OS 的 launchctl 为例.
+
+`launchctl` 是 Mac 用于管理系统运行, 类似于 linux 的 systemd, 用于管理 LauchAgent 的任务加载.
+
+ps: 太久没接触ubuntu,不知道切换过来了没, archlinux 在去年完成systemd的迁移), 用于
+
+常用的子命令有 unload, load, stop ,start 等等. 这里就只考虑 load 和 unload 功能的扩充了.
+
+## zsh 是怎么进行补全的?
+
+..待补充
+
+
+## 怎么开发脚本
+
+一般来说, 看文档是学不了的, 因为一里面压根没告诉你怎么写, 而只是罗列了所有的接口.
+
+## 基本内容
+
+```bash
+#compdef launchctl
+#autoload
+```
+
+这两行分别声明了对应的命令以及自动加载特性, 无他.
+
+## subcommand 子命令补全
+
+    ps: 对于 gnu 风格的命令行工具, 很少有子命令, 这一章节并不是必要的.
+
+```
+local -a _1st_arguments
+
+_1st_arguments=(
+    "load:Load configuration files and/or directories"
+    "unload:Unload configuration files and/or directories"
+    "start:Start specified job"
+    "stop:Stop specified job"
+    "help:This help output"
+)
+
+local label_subcommand="launchctl subcommand"
+
+if (( CURRENT == 2 )); then
+    _describe -t commands "$label_subcommand" _1st_arguments
+    return 0
+fi
+```
+
+这段代码还是比较好懂的, 补全所有的`subcommand`并给出提示信息.
+
+注意 `CURRENT` 这个变量, 它标记处于命令行的第几个单词
+
+在按下tab之前, 用户输入的文本为 `launchctl<空格><tab>`, 第一个单词是主命令`launchctl`, 显然`CURRENT` 是一个大于2的整数.
+
+对于还存在子命令, 子子命令的补全, 以此类推.
+
+## 文件补全
+
+`launchctl unload` 用于关闭一个正在运行的服务, 比如nginx, php-fpm等等, 显然这里需要补全的是一个文件路径, 对应一个位于 `~/Library/LaunchAgents/` 下的 `plist` 文件.
+
+首先假设已经实现了对应的工具函数 `_get_loaded_user_plists` , 这个函数将生成目前正在运行的plist文件列表
+
+    具体实现见后文附件.
+
+以下是关键代码
+
+```bash
+
+local expl
+
+case "$words[2]" in 
+    unload)
+        local loaded_user_plists
+        loaded_user_plists="$(_get_loaded_user_plists)"
+        _wanted loaded_user_plists expl 'running jobs' compadd -a loaded_user_plists
+        ;;
+esac
+
+return 1
+```
+
+可见对于简单参数的补全实现是很轻松的
+
+zsh 如果发现补全函数返回0, 会将输出作为补全内容作为候补内容输出到终端中去.
+
+因此我们只需要确定子命令是我们所预期的`unload` , 将文件列表发送给用户就行了.
+
+由于副命令很多, 所以这里用`case` 根据子命令的不同
+
+首先注意 `$word` 这个变量, 通过打印该变量可以发现, 它是一个将用户已经输出的命令按空格拆分的数组
+
+比如输入 `launchctl unload` , 那么对应的words将是 `( 'launchctl' 'unload' '' )`, 最后一位是一个空字符串.
+
+    严格地说, 这里拆分依据并不是空格
+    如果你明白 $@ 和 $# 区别, 你就懂我啥意思了. 
+    这里空间不够, 我就不写了 :)
+
+
+## 调试脚本
+
+开发过程中难免写错, 需要重复调试, 这里有几个小技巧.
+
+1. echo
+
+echo 当然是喜闻乐见的 debug 指令之一了.
+
+2. autoload -U
+
+利用这个命令reload修改之后的 `_launchctl`, 不断重启 zsh 是一件痛苦的事情, 你懂的.
+
+3. set -x 
+
+`set -x` 将开启zsh的 XTRACE 选项, 所有运行脚本背后的指令和参数都直接打印到屏幕, 俗称上帝视角.
+如果发现不能正常执行, 那么只要运行 `set -x`, 手动输入命令后按tab. 
+
+> ps1: set +x 恢复正常模式.
+
+> ps2: 千万不要手残提前触发其他zsh的特性, 不然面对满屏的文本里就没啥心情继续下去了. 这里需要老老实实输入完整的命令, 在需要触发对应补全过程的地方按下tab触发补全.
+
+由于调试信息实在太多了, 运行几次之后可以把调试窗口关了, 或者将终端的buffer清空, 总而言之, 减少输出的log以快速定位问题.
+
+
+    至于更细节的内容以及相关api文档, 请看手册 `man zshcompsys`
+    zsh 的~~破手册~~跟天书一样的文档也没打算解释清楚, 我能说的只有这么多了
+    关键是我也就学到这一步
+    更多技术细节请自行深挖.
+
+
+Job done!
