@@ -12,25 +12,19 @@ zsh 已经不是什么新新鲜事了, 而 `oh-my-zsh` 相信很多人都已经�
 
 常规的 alias 和 shell script, 能用上些稍微方便的特殊语法, 大部分保留在 bash 的水平. 这时候倒不如使用bash的语法, 保证兼容性和可移植性.
 
-
 本文简单介绍如何编写zsh的补全插件, 以 Mac OS 的 launchctl 为例.
 
-`launchctl` 是 Mac 用于管理系统运行, 类似于 linux 的 systemd, 用于管理 LauchAgent 的任务加载.
+    `launchctl` 是 Mac 用于管理系统运行, 类似于 linux 的 systemd, 用于管理 LaunchAgent 加载, 是 `launchd` 的前端.
 
-ps: 太久没接触ubuntu,不知道切换过来了没, archlinux 在去年完成systemd的迁移), 用于
-
-常用的子命令有 unload, load, stop ,start 等等. 这里就只考虑 load 和 unload 功能的扩充了.
-
-## zsh 是怎么进行补全的?
-
-..待补充
-
+常用的 subcommand 有 unload, load, stop ,start 等等. 这里就只考虑 load 和 unload 补全功能扩充.
 
 ## 怎么开发脚本
 
-一般来说, 看文档是学不了的, 因为一里面压根没告诉你怎么写, 而只是罗列了所有的接口.
+按作者的话说, 看文档是很难学会的. 因为一里面压根没告诉你怎么写, 而只是罗列了所有的接口.
 
 ## 基本内容
+
+首选，脚本头部加上以下内容
 
 ```bash
 #compdef launchctl
@@ -39,9 +33,11 @@ ps: 太久没接触ubuntu,不知道切换过来了没, archlinux 在去年完成
 
 这两行分别声明了对应的命令以及自动加载特性, 无他.
 
-## subcommand 子命令补全
+## subcommand 补全
+    
+subcommand 应该是子命令或者副命令的意思， 这里就保留原文了。
 
-    ps: 对于 gnu 风格的命令行工具, 很少有子命令, 这一章节并不是必要的.
+    ps: 对于 gnu 风格的命令行工具, 很少有 subcommand , 这一章节并不是必要的.
 
 ```
 local -a _1st_arguments
@@ -68,7 +64,7 @@ fi
 
 在按下tab之前, 用户输入的文本为 `launchctl<空格><tab>`, 第一个单词是主命令`launchctl`, 显然`CURRENT` 是一个大于2的整数.
 
-对于还存在子命令, 子子命令的补全, 以此类推.
+对于还存在 subcommand , 子 subcommand 的补全, 以此类推.
 
 ## 文件补全
 
@@ -99,9 +95,9 @@ return 1
 
 zsh 如果发现补全函数返回0, 会将输出作为补全内容作为候补内容输出到终端中去.
 
-因此我们只需要确定子命令是我们所预期的`unload` , 将文件列表发送给用户就行了.
+因此我们只需要确定 subcommand 是我们所预期的`unload` , 将文件列表发送给用户就行了.
 
-由于副命令很多, 所以这里用`case` 根据子命令的不同
+由于副命令很多, 所以这里用`case` 根据 subcommand 的不同
 
 首先注意 `$word` 这个变量, 通过打印该变量可以发现, 它是一个将用户已经输出的命令按空格拆分的数组
 
@@ -135,11 +131,8 @@ echo 当然是喜闻乐见的 debug 指令之一了.
 
 由于调试信息实在太多了, 运行几次之后可以把调试窗口关了, 或者将终端的buffer清空, 总而言之, 减少输出的log以快速定位问题.
 
-
     至于更细节的内容以及相关api文档, 请看手册 `man zshcompsys`
     zsh 的~~破手册~~跟天书一样的文档也没打算解释清楚, 我能说的只有这么多了
-    关键是我也就学到这一步
     更多技术细节请自行深挖.
-
 
 Job done!
