@@ -6,7 +6,7 @@ comments: true
 categories: [zsh, script, tutorial]
 ---
 
-zsh 已经不是什么新新鲜事了, `oh-my-zsh` 相信很多人都已经在用了.
+zsh 已经不是什么新鲜事了, `oh-my-zsh` 相信很多人都已经在用了.
 
 但`zsh` 存在一个明显的问题, 它并不是什么开箱即用的工具, 需要大量配置, 也很难上手扩充新功能, 这点和vim非常相似.
 
