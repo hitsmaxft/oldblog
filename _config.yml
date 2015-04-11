@@ -8,6 +8,7 @@ subtitle:
 author: histmaxft
 simple_search: http://google.com.hk/search
 description:
+logo: hits.png
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
 # You can customize the format as defined in
