@@ -3,7 +3,10 @@ layout: post
 title: "新 iOS 杂谈"
 date: 2014-06-04 15:28:44 +0800
 comments: true
-categories: ["apple"]
+categories:
+- Apple
+- iOS
+- mobile
 ---
 
 这里对发布会的怨念很大, 发点正能量
