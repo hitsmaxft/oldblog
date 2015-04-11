@@ -1,9 +1,13 @@
 ---
 layout: post
-title: "Asynchronous Programming With PHPDaemon"
+title: "PHPDaemon 异步编程"
 date: 2014-03-24 03:39:27 +0800
 comments: true
 categories: 
+- async
+- php daemon
+- php
+- network
 ---
 
 phpdaemon, 基于异步网络请求的应用服务框架
