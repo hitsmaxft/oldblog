@@ -3,7 +3,7 @@ layout: post
 title: "PHP Pro : 弱类型"
 date: 2015-04-12 00:19:44 +0800
 comments: true
-published: false
+_published: false
 categories: 
 - php
 - tutorial
