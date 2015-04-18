@@ -21,12 +21,15 @@ service {
     root /service/http;
     index index.php;
 
-    rewrite ^/api/(.*)+ /index.php?app=api&method=$1 last;
-    rewrite ^/index.php/(.*)+ /old_api_warning.html last;
+    rewrite ^/api/(.*)+ /index.php?app=api&method=$1 break;
+    rewrite ^/index.php/(.*)+ /old_api_warning.html break;
 
     location / {
+        return 200 "index";
     }
+
     location = /index.php {
+        return 200 "index.php";
     }
 }
 ```
@@ -34,8 +37,8 @@ service {
 
 上面的例子中， 指定的类型可以分为两种。
 
-* `server`,`root`, `index`, `location` 是 http 模块提供的指令
-* 而 rewrite 则是 `rewrite` 模块提供的指令之一， 同类的还有常用的 `if`
+* `server`,`root`, `index`, `location` 是 `ngx_http_core_module` 提供的指令
+* 而 `rewrite` 则是 `ngx_http_rewrite_module` 提供的指令之一， 同类的还有常用的 `if`
 
 简单地概括， nginx 的处理配置流程如下
 
