@@ -68,8 +68,8 @@ location /index.php {
 有时候，为了优化 url 的展示，或者兼容旧应用的 url 规则， 只是这么简单的两条 location 配置自然是不够用的。这时候我们可以通过 `rewrite` 规则进行弥补。
 
 ```
-rewrite /index.html$ /app/page-$1+/([\w]+); //兼容旧 url
-rewrite /app/page-(.*)+/([\w]+) /index.php?app=api&page=$1&id=$2& break;
+rewrite /index.html$ /app/page-default; //兼容旧 url
+rewrite /app/page-(.*) /index.php?app=api&page=$1 break;
 ```
 
 请注意这两条 `rewrite` 规则区别的在最后一个 `flag` 参数 `break`
@@ -88,9 +88,11 @@ rewrite /app/page-(.*)+/([\w]+) /index.php?app=api&page=$1&id=$2& break;
 
 以上说的 `rewrite` 规则属于 nginx 的内部重定向规则， 也就是说， 用户外部看到的 url 依然是他输入的 url ， 而转给后端应用的 `$uri` ， 则已经是 nginx 改写之后的结果。
 
-    如果需要进行显式地外部重定向， 需要借助 `redirect` , `permanent` 这两个 flag 进行 302 和 301 重定向，它的行为和 `break` 类似， 区别在于 nginx 会中断流程， 通过 http 请求向用户端返回重定向的影响，也就是这次请求不需要进过后端服务， 由 nginx 全职负责。
+如果需要进行显式地外部重定向， 需要借助 `redirect` , `permanent` 这两个 flag 进行 302 和 301 重定向.
+它的行为和 `break` 类似， 区别在于 nginx 会中断流程， 通过 http 请求向用户端返回重定向的影响，
+也就是这次请求不需要进过后端服务， 由 nginx 全职负责。
 
-    `rewrite /error.html$ /error2.html redirect;`
+`rewrite /error.html$ /error2.html redirect;`
 
 ### break 和 last 区别
 
