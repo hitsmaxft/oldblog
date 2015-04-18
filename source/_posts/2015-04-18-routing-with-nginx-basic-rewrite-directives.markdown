@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "nginx 路由杂谈 - 基础指令"
+title: "nginx 路由杂谈 - rewrite 指令与重定向"
 date: 2015-04-18 19:22:40 +0800
 comments: true
 categories:
