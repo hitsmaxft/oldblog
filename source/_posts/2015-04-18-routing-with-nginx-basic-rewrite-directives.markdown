@@ -11,7 +11,10 @@ categories:
 > 在书写 nginx 路由规则的时候， 得保证规则配置的规范， 否则维护起来成本很高。
 > 本文简要地讨论了在 rewrite 模块的基础实现的简单路由规则，并解释了常用指令的使用细节。
 
-这是一个简单 nginx `server` 配置
+
+## rewrite 与 location
+
+首先，这是一个简单 nginx `server` 配置:
 
 ```
 service {
@@ -30,6 +33,7 @@ service {
 
 
 上面的例子中， 指定的类型可以分为两种。
+
 * `server`,`root`, `index`, `location` 是 http 模块提供的指令
 * 而 rewrite 则是 `rewrite` 模块提供的指令之一， 同类的还有常用的 `if`
 
@@ -151,18 +155,26 @@ location = error.html {
 ```nginx
 location = error.html {
     rewrite /error.html /error.html  break;
+
+    if ($arg_q = "") {
+        return 404 "not q";
+    }
+
+    fastcgi_pass 127.0.0.1:9000;
+    #其他 fastcgi 配置
 }
 ```
 ```nginx
 location = error.html {
-        rewrite /error.html /error.html last;
+    rewrite /error.html /error.html last;
+    fastcgi_pass 127.0.0.1:9000;
 }
 ```
 
-而第一例子， 相当于什么都没发生， 接着执行后续的指令。
+第一个例子，完成了 rewrite 指令之后，break 指令使得后续的其他 rewrite 规则失效, 接着进行 proxy.
 第二个例子会导致不断地进行 location 匹配， 最终导致 nginx 返回 500.
 
-    nginx 会记录同一条 rewrite 规则的执行次数，如果超过10次，将自动触发 500 进行保护。
+返回结果是这样的：
 
 ```
 HTTP/1.1 500 Internal Server Error
@@ -173,10 +185,25 @@ Content-Length: 192
 Connection: close
 ```
 
+    注：nginx 会记录同一条 rewrite 规则的执行次数，如果超过10次，将自动触发 500 进行自我保护。
+
+## return 指令的应用
+
 在 `rewrite` 模块中， 还有一条有用的指令 `return`, 用于直接返回客户端指定的状态码。
 甚至支持指定文本内容和url， 相比起使用 `rewrite` 指令302进行曲线救国，要简便地多。
 
 ```
-  return 302 /page_not_found.html;
-  return 404 "page not found";
+location = /index.php {
+  if ( $arg_q = "" ) {
+    return 302 /page_not_found.html;
+  }
+
+  if ( $arg_id = "" ) {
+    return 404 "page not found";
+  }
+  return 200 "hello";
+}
 ```
+
+对于常规的基于 url 提供服务的应用， 基础的 rewrite 指令配合已经足够完成大部分任务。
+下一篇文章再聊聊基于条件，变量和更加复杂的上下文, 完成进行路由规则匹配.
