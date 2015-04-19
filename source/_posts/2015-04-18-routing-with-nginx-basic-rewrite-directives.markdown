@@ -14,7 +14,7 @@ categories:
 
 ## rewrite 与 location
 
-首先，这是一个简单 nginx `server` 配置:
+首先，这是一个不完整 nginx 虚拟主机配置:
 
 ```
 service {
@@ -69,6 +69,7 @@ location /index.php {
 
 ```
 rewrite /index.html$ /app/page-default; //兼容旧 url
+
 rewrite /app/page-(.*) /index.php?app=api&page=$1 break;
 ```
 
@@ -79,7 +80,7 @@ rewrite /app/page-(.*) /index.php?app=api&page=$1 break;
 多出来的 `break` 参数作用会使得 `rewirte` 指令的跳转方式发生变化:
 
 * 没有 flag 的 rewrite 指令完成 location 改写之后 ，继续往下寻找其他 `rewrite` 规则， 看看有没有符合要求的。如果没有， 那么进入 `location` 匹配。
-* 带 `last`， 跳过其他所有 `rewrite` 规则， 进入 `location` 匹配
+* 带 `break`， 跳过其他所有 `rewrite` 规则， 进入 `location` 匹配
 
 这里简单总结一下:
 
@@ -89,7 +90,7 @@ rewrite /app/page-(.*) /index.php?app=api&page=$1 break;
 以上说的 `rewrite` 规则属于 nginx 的内部重定向规则， 也就是说， 用户外部看到的 url 依然是他输入的 url ， 而转给后端应用的 `$uri` ， 则已经是 nginx 改写之后的结果。
 
 如果需要进行显式地外部重定向， 需要借助 `redirect` , `permanent` 这两个 flag 进行 302 和 301 重定向.
-它的行为和 `break` 类似， 区别在于 nginx 会中断流程， 通过 http 请求向用户端返回重定向的影响，
+它的行为和 `break` 类似， 区别在于 nginx 会中断流程， 通过 http 请求告诉用户端进行重定向，
 也就是这次请求不需要进过后端服务， 由 nginx 全职负责。
 
 `rewrite /error.html$ /error2.html redirect;`
@@ -102,15 +103,18 @@ wiki 上是这么写的
 
 > stops processing the current set of `ngx_http_rewrite_module` directives and starts a search for a new location matching the changed URI
 
-如果是在 `server` 的顶级部分， 那么它们的作用是相同， 跳过剩下的 rewrite 指定， 进入 locaton 匹配。 如果 rewrite 是在 if 内部， 和直接放在 server 下级的  rewrite 行为是一致的。
+如果是在 `server` 的顶级部分， 那么它们的作用是相同， 跳过剩下的 rewrite 指定， 进入 location 匹配。
+如果 rewrite 是在 `server` 区块顶级 if 内部， 和直接放在 server 下级的  rewrite 行为是一致的。
 
 ```
 server {
     rewrite /error1.html /error.html break;
     rewrite /error2.html /error.html last;
+
     if ( $arg_version = "1.1" ) {
         rewrite /error3.html /error.html break;
     }
+
     location = error.html {
     }
 }
@@ -118,7 +122,7 @@ server {
 
 以上的 rewrite 的跳转行为是相同的， 进入 location 匹配流程。
 
-而两者的区别， 在于当 rewrite 指定存在于 `location` 区块中时, 见例子
+而两者的区别， 在于当 rewrite 指令存在于 `location` 区块中时, 见例子
 
 ```
 location = index.php {
@@ -129,16 +133,17 @@ location = index.php {
 location = error.html {
     if ( $arg_test ~= "" ) {
         rewrite /error.html /error-test.html break;
-        root /service/http/asset;
     }
 }
 
 ```
 
 第一个 location , 如果 `q` 参数为空， 那么将展示错误页面。
-第二个 location ， 如果 `test` 参数不为空， 通过 rewrite 规则，使用另外一个 error-test.html;
 
-    注意， 这里并没有一个 `location = error2.html` 的规则
+第二个 location ， 如果 `test` 参数不为空， 通过 rewrite 规则，使用另外一个 error-test.html,
+但 location 不变
+
+    注意， 这里并没有一个 `location = error2.html` 的匹配规则
 
 从这个 case 的结果， 可以明显得区分两个指令之间的细微差别
 
@@ -149,7 +154,7 @@ location = error.html {
 
 `locaton = index.php`
 
-直接转向
+转向
 
 `locaton = error.html`
 
@@ -192,9 +197,25 @@ Connection: close
 
     注：nginx 会记录同一条 rewrite 规则的执行次数，如果超过10次，将自动触发 500 进行自我保护。
 
+
+**小结**
+
+这里构造了两组例子用来说明 `last` 和 `break` 两个 flag 参数行为上的不一致。
+并不是说 rewrite 规则在  server 和 location 上下文中的行为不一致， 而是他们的行为特征很容易造成误解。
+
+两者的本质区别在于是否**重新**进行 `location` 匹配，所以当在 location 上下文 进行 last rewrite时。
+对于不熟悉 rewrite 指定的其他人容易造成误解。
+
+所以还是前文所提到的观点， 尽可能地将 rewrite 和 location 离开来。 在 location 中进行 rewrite， 容易造成重定向问题。
+
+    由于 rewrite 模块的 `rewrite` 和 `if` 指令会使得 nginx
+    的路由规则出现较多的逻辑和分支跳转， 在维护性上是比较糟糕的，
+    并不推荐过多地进行使用， 本文只是从行为和特性上分析了这些指令，
+    并不代表支持这样去使用 rewrite 指令。
+
 ## return 指令的应用
 
-在 `rewrite` 模块中， 还有一条有用的指令 `return`, 用于直接返回客户端指定的状态码。
+在 `rewrite` 模块中， 有一条非常有用的指令 `return`, 用于直接返回客户端指定的状态码。
 甚至支持指定文本内容和url， 相比起使用 `rewrite` 指令302进行曲线救国，要简便地多。
 
 ```
@@ -211,4 +232,5 @@ location = /index.php {
 ```
 
 对于常规的基于 url 提供服务的应用， 基础的 rewrite 指令配合已经足够完成大部分任务。
+
 下一篇文章再聊聊基于条件，变量和更加复杂的上下文, 完成进行路由规则匹配.
