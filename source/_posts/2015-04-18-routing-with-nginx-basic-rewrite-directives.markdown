@@ -211,7 +211,7 @@ Connection: close
     由于 rewrite 模块的 `rewrite` 和 `if` 指令会使得 nginx
     的路由规则出现较多的逻辑和分支跳转， 在维护性上是比较糟糕的，
     并不推荐过多地进行使用， 本文只是从行为和特性上分析了这些指令，
-    并不代表支持这样去使用 rewrite 指令。
+    并不代表支持过度使用 rewrite 指令。
 
 ## return 指令的应用
 
