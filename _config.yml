@@ -3,7 +3,7 @@
 # ----------------------- #
 
 url: http://blog.bhe.me
-title: BheHonTyu' Blogging
+title: "BheHonTyu's Blogging"
 subtitle:
 author: histmaxft
 simple_search: http://google.com.hk/search
@@ -14,6 +14,7 @@ logo: hits.png
 # You can customize the format as defined in
 # http://www.ruby-doc.org/core-1.9.2/Time.html#method-i-strftime
 # Additionally, %o will give you the ordinal representation of the day
+
 date_format: "ordinal"
 
 # RSS / Email (optional) subscription links (change if using something like Feedburner)
@@ -53,7 +54,9 @@ titlecase: true       # Converts page and post titles to titlecase
 # To add custom asides, create files in /source/_includes/custom/asides/ and add them to the list like 'custom/asides/custom_aside_name.html'
 
 #default_asides: [asides/recent_posts.html, asides/github.html, custom/asides/douban.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]
-default_asides: [asides/recent_posts.html, custom/asides/douban.html]
+
+
+default_asides: [ asides/recent_posts.html, custom/asides/douban.html]
 
 # Each layout uses the default asides, but they can have their own asides instead. Simply uncomment the lines below
 # and add an array with the asides you want to use.
@@ -115,3 +118,17 @@ douban_percolumn: 3 #How many per column
 douban_img_style: small #The size of the content pictures, Leave it blank to small
 douban_hidelogo: true #Leave it blank to false
 douban_hideself:  true #Leave it blank to false
+
+
+
+# octopress-page-view
+# page-view:
+service_account_email:    # XXXXXX@developer.gserviceaccount.com
+key_file: privatekey.p12  # service account private key file
+key_secret: notasecret    # service account private key's password
+profileID:                # ga:XXXXXXXX
+start: 3 years ago        # Beginning of report
+end: now                  # End of report
+metric: ga:pageviews      # Metric code
+segment: gaid::-1         # All visits
+filters:                  # optional
